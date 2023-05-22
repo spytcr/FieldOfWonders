@@ -8,6 +8,8 @@ if getattr(sys, 'frozen', False):
     os.chdir(sys._MEIPASS)
 
 pygame.init()
+pygame.display.set_caption('Поле математических чудес')
+pygame.display.set_icon(pygame.image.load(settings.wheel))
 screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
 clock = pygame.time.Clock()
 running = True

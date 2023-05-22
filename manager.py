@@ -27,7 +27,7 @@ class Manager:
 
     def game_end(self, winner):
         self.game = None
-        self.end = EndMenu(winner, self.menu_start, self.screen)
+        self.end = EndMenu(*winner, self.menu_start, self.screen)
 
     def update(self, tick):
         self.screen.blit(self.background, (0, 0))
@@ -43,5 +43,5 @@ class Manager:
             if self.menu is not None:
                 self.menu.keyboard(None if event.key == pygame.K_BACKSPACE else event.unicode)
             if self.game is not None:
-                if pygame.K_0 <= event.key <= pygame.K_9:
+                if pygame.K_0 <= event.key <= pygame.K_9 and self.game.reward is not None:
                     self.game.task.keyboard(event.key - pygame.K_0)

@@ -1,8 +1,8 @@
 import pygame
 import settings
-from hud import Button
+from hud import Button, ImageButton, TextView
 
-INPUT_W, INPUT_H = 450, 50
+INPUT_W, INPUT_H = 400, 50
 
 
 class StartMenu:
@@ -10,19 +10,20 @@ class StartMenu:
         self.start = start
         self.screen = screen
 
-        font = pygame.font.SysFont('arialblack', 44)
-        self.sign = font.render('Поле чудес', True, pygame.Color('white'))
-
         self.inputs = pygame.sprite.Group()
-        x, self.y = (settings.WIDTH - INPUT_W) // 2, (settings.HEIGHT - settings.commands * (INPUT_H + 20)) // 2
+        x, y = (settings.WIDTH - INPUT_W) // 2, (settings.HEIGHT - settings.commands * (INPUT_H + 20)) // 2
         for i in range(settings.commands):
-            InputField(f'Название команды {i + 1}', i, self.activate, x, self.y + i * (INPUT_H + 20), self.inputs)
+            InputField(f'Название команды {i + 1}', i, self.activate, x, y + i * (INPUT_H + 20), self.inputs)
+
+        self.text = pygame.sprite.GroupSingle()
+        TextView(36, 0, 0, self.text)
+        self.text.sprite.set_text(['Поле математических', 'чудес'])
+        self.text.sprite.rect.centerx, self.text.sprite.rect.bottom = settings.WIDTH // 2, y - 20
 
         self.button = pygame.sprite.GroupSingle()
-        surface = pygame.image.load(settings.button).convert_alpha()
-        Button(self.callback, surface, (settings.WIDTH - surface.get_width()) // 2,
-               (settings.HEIGHT + settings.commands * (INPUT_H + 20)) // 2, self.button)
-        self.button.sprite.set_text('Начать игру', 30, pygame.Color('white'))
+        ImageButton('Начать игру', self.callback, 0,
+                    (settings.HEIGHT + settings.commands * (INPUT_H + 20)) // 2, self.button)
+        self.button.sprite.rect.centerx = settings.WIDTH // 2
 
         self.active = None
 
@@ -45,10 +46,9 @@ class StartMenu:
         self.start(commands)
 
     def update(self):
-        self.screen.blit(self.sign, ((settings.WIDTH - self.sign.get_width()) // 2,
-                                     self.y - self.sign.get_height() // 2 - 60))
         self.inputs.update()
         self.inputs.draw(self.screen)
+        self.text.draw(self.screen)
         self.button.update()
         self.button.draw(self.screen)
 
@@ -72,21 +72,20 @@ class InputField(Button):
 
 
 class EndMenu:
-    def __init__(self, winner, start, screen):
+    def __init__(self, command, score, start, screen):
         self.start = start
         self.screen = screen
-        font = pygame.font.SysFont('arial', 40)
-        self.sign1 = font.render(f'Победила команда "{winner[1]}"', True, pygame.Color('white'))
-        self.sign2 = font.render(f'Со счетом {winner[0]}', True, pygame.Color('white'))
+
+        self.text = pygame.sprite.GroupSingle()
+        TextView(40, 0, settings.HEIGHT * 0.3, self.text)
+        self.text.sprite.set_text([f'Победила команда "{command}"', f'Со счетом {score}', 'Поздравляем!'])
+        self.text.sprite.rect.centerx = settings.WIDTH // 2
+
         self.button = pygame.sprite.GroupSingle()
-        surface = pygame.image.load(settings.button).convert_alpha()
-        Button(self.start, surface, (settings.WIDTH - surface.get_width()) // 2, settings.HEIGHT // 2, self.button)
-        self.button.sprite.set_text('Назад', 30, pygame.Color('white'))
+        ImageButton('В главное меню', self.start, 0, self.text.sprite.rect.bottom + 15, self.button)
+        self.button.sprite.rect.centerx = settings.WIDTH // 2
 
     def update(self):
-        self.screen.blit(self.sign1, ((settings.WIDTH - self.sign1.get_width()) // 2,
-                                      (settings.HEIGHT - self.sign1.get_height() - self.sign2.get_height()) // 2 - 60))
-        self.screen.blit(self.sign2, ((settings.WIDTH - self.sign2.get_width()) // 2,
-                                      (settings.HEIGHT - self.sign2.get_height()) // 2 - 40))
+        self.text.draw(self.screen)
         self.button.update()
         self.button.draw(self.screen)

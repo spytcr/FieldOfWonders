@@ -2,7 +2,7 @@ import pygame
 import settings
 from hud import Button
 
-BOX_SIZE = 35
+BOX_SIZE = 40
 
 
 class Task:
@@ -11,19 +11,15 @@ class Task:
         self.screen = screen
 
         self.boxes = pygame.sprite.Group()
-        sizes = (len(data['first']), len(data['second']), len(data['sum']))
-        self.x = (settings.WIDTH + max(sizes) * BOX_SIZE) // 2
-        self.y = settings.HEIGHT * 0.7
-        self.add(data['first'], self.x - sizes[0] * BOX_SIZE, self.y)
-        self.add(data['second'], self.x - sizes[1] * BOX_SIZE, self.y + BOX_SIZE + 5)
-        self.add(data['sum'], self.x - sizes[2] * BOX_SIZE, self.y + 2 * BOX_SIZE + 15)
+        self.x, self.xn = settings.WIDTH * 0.97, max(map(len, data['expressions']))
+        self.y, self.yn = settings.HEIGHT * 0.1, len(data['expressions'])
+        for i, text in enumerate(data['expressions']):
+            for j, char in enumerate(text):
+                TaskSprite(char, self.callback, self.x - BOX_SIZE * (len(text) - j),
+                           self.y + i * (BOX_SIZE + (2 if i != self.yn - 1 else 4)), self.boxes)
 
         self.answers = data['answers']
         self.selected = None
-
-    def add(self, text, x, y):
-        for i, char in enumerate(text):
-            TaskSprite(char, self.callback, x + (i * BOX_SIZE), y, self.boxes)
 
     def callback(self, char):
         if char in self.answers.keys():
@@ -53,13 +49,16 @@ class Task:
             self.select()
 
     def update(self):
+        pygame.draw.rect(self.screen, pygame.Color('royalblue'),
+                         (self.x - self.xn * BOX_SIZE - 24, self.y - 4,
+                          self.xn * BOX_SIZE + 28, self.yn * (BOX_SIZE + 2) + 12), 0)
         self.boxes.update()
         self.boxes.draw(self.screen)
-        cx, cy = settings.WIDTH - self.x + 10, self.y + BOX_SIZE - 10
+        cx, cy = self.x - self.xn * BOX_SIZE - 21, self.y + (self.yn - 1) / 2 * (BOX_SIZE + 2) - 11
         pygame.draw.line(self.screen, pygame.Color('white'), (cx + 10, cy), (cx + 10, cy + 20), 2)
         pygame.draw.line(self.screen, pygame.Color('white'), (cx, cy + 10), (cx + 20, cy + 10), 2)
-        ly = self.y + 2 * BOX_SIZE + 10
-        pygame.draw.line(self.screen, pygame.Color('white'), (settings.WIDTH - self.x, ly), (self.x, ly), 2)
+        ly = self.y + (self.yn - 1) * (BOX_SIZE + 2)
+        pygame.draw.line(self.screen, pygame.Color('white'), (cx, ly), (self.x, ly), 2)
 
 
 class TaskSprite(Button):
@@ -72,4 +71,4 @@ class TaskSprite(Button):
         super().update()
         self.image.fill(pygame.Color('dodgerblue4' if self.active else 'dodgerblue'))
         pygame.draw.rect(self.image, pygame.Color('white'), (0, 0, BOX_SIZE, BOX_SIZE), 1)
-        self.set_text(self.char, 22, 'white')
+        self.set_text(self.char, 28, 'white')
