@@ -1,9 +1,8 @@
 import pygame
-import settings
-from menu import StartMenu, EndMenu
-from game import Game
 import json
-from random import sample
+import settings
+from game import Game
+from menu import Menu
 
 
 class Manager:
@@ -13,21 +12,32 @@ class Manager:
 
         with open(settings.questions, 'r', encoding='utf8') as f:
             self.data = json.load(f)
-        self.menu = StartMenu(self.game_start, self.screen)
+        self.round = 0
+        self.winners = [[] for _ in range(len(self.data) - 1)]
+
+        self.menu = None
         self.game = None
-        self.end = None
+        self.menu_start()
 
     def menu_start(self):
-        self.end = None
-        self.menu = StartMenu(self.game_start, self.screen)
+        self.game = None
+        self.round += 1
+        if self.round == len(self.data):
+            self.menu = Menu('Финал', self.game_start, self.screen, commands=[el[0] for el in self.winners])
+        else:
+            self.menu = Menu(f'Раунд {self.round}', self.game_start, self.screen)
 
     def game_start(self, commands):
         self.menu = None
-        self.game = Game(commands, sample(self.data, min(len(self.data), settings.rounds)), self.game_end, self.screen)
+        self.game = Game(self.winners if self.round == len(self.data) else [[el, 0] for el in commands],
+                         self.data[self.round - 1], self.game_end, self.screen)
 
     def game_end(self, winner):
-        self.game = None
-        self.end = EndMenu(*winner, self.menu_start, self.screen)
+        if self.round == len(self.data):
+            self.round = 0
+        else:
+            self.winners[self.round - 1] = winner
+        self.menu_start()
 
     def update(self, tick):
         self.screen.blit(self.background, (0, 0))
@@ -35,8 +45,6 @@ class Manager:
             self.menu.update()
         if self.game is not None:
             self.game.update(tick)
-        if self.end is not None:
-            self.end.update()
 
     def event(self, event):
         if event.type == pygame.KEYUP:

@@ -1,91 +1,72 @@
 import pygame
 import settings
-from hud import Button, ImageButton, TextView
-
-INPUT_W, INPUT_H = 400, 50
+from ui import Button, TextView, LinearLayout, Clickable
 
 
-class StartMenu:
-    def __init__(self, start, screen):
-        self.start = start
+class Menu:
+    def __init__(self, level, callback, screen, commands=None):
+        self.callback = callback
         self.screen = screen
 
+        self.logo = pygame.image.load(settings.logo).convert_alpha()
+
+        self.card = LinearLayout(pygame.image.load(settings.card_lg).convert_alpha(),
+                                 settings.WIDTH * 0.6, settings.HEIGHT * 0.1)
         self.inputs = pygame.sprite.Group()
-        x, y = (settings.WIDTH - INPUT_W) // 2, (settings.HEIGHT - settings.commands * (INPUT_H + 20)) // 2
-        for i in range(settings.commands):
-            InputField(f'Название команды {i + 1}', i, self.activate, x, y + i * (INPUT_H + 20), self.inputs)
 
-        self.text = pygame.sprite.GroupSingle()
-        TextView(36, 0, 0, self.text)
-        self.text.sprite.set_text(['Поле математических', 'чудес'])
-        self.text.sprite.rect.centerx, self.text.sprite.rect.bottom = settings.WIDTH // 2, y - 20
+        TextView(level, pygame.font.SysFont('arialblack', 28), self.card)
 
-        self.button = pygame.sprite.GroupSingle()
-        ImageButton('Начать игру', self.callback, 0,
-                    (settings.HEIGHT + settings.commands * (INPUT_H + 20)) // 2, self.button)
-        self.button.sprite.rect.centerx = settings.WIDTH // 2
+        if commands is None:
+            for i in range(settings.commands):
+                InputField(self.activate, i, f'Команда {i + 1}', self.card, self.inputs)
+        else:
+            for el in commands:
+                InputField(lambda: None, None, el, self.card)
+
+        self.button = TextView('Начать игру', pygame.font.SysFont('arialblack', 24), self.card)
+        self.clickable = Clickable(self.on_click)
+        self.card.update()
 
         self.active = None
 
     def activate(self, i):
         if self.active is not None:
-            self.inputs.sprites()[self.active].active = False
+            self.inputs.sprites()[self.active].set_active(False)
         self.active = i
-        self.inputs.sprites()[self.active].active = True
+        self.inputs.sprites()[self.active].set_active(True)
 
     def keyboard(self, char):
         if self.active is not None:
+            sprite = self.inputs.sprites()[self.active]
             if char is None:
-                if len(self.inputs.sprites()[self.active].text) != 0:
-                    self.inputs.sprites()[self.active].text = self.inputs.sprites()[self.active].text[:-1]
+                if len(sprite.text) != 0:
+                    sprite.set_text(sprite.text[:-1])
             else:
-                self.inputs.sprites()[self.active].text += char
+                sprite.set_text(sprite.text + char)
 
-    def callback(self):
-        commands = [inp.text for inp in self.inputs.sprites()]
-        self.start(commands)
+    def on_click(self):
+        commands = [sprite.placeholder if sprite.text == '' else sprite.text for sprite in self.inputs.sprites()]
+        self.callback(commands)
 
     def update(self):
+        self.screen.blit(self.logo, (settings.WIDTH * 0.05, settings.HEIGHT * 0.05))
+        self.clickable.update(self.button.rect)
         self.inputs.update()
-        self.inputs.draw(self.screen)
-        self.text.draw(self.screen)
-        self.button.update()
-        self.button.draw(self.screen)
+        self.card.draw(self.screen)
 
 
 class InputField(Button):
-    def __init__(self, placeholder, i, callback, x, y, group):
-        super().__init__(lambda: callback(self.i), pygame.Surface((INPUT_W, INPUT_H)), x, y, group)
-        self.placeholder = placeholder
-        self.i = i
+    def __init__(self, callback, i, placeholder, *groups):
+        super().__init__(callback, i, placeholder, pygame.font.SysFont('arialblack', 20),
+                         pygame.image.load(settings.card_sm), *groups)
+        self.placeholder, self.text = placeholder, ''
         self.active = False
-        self.text = ''
 
-    def update(self):
-        super().update()
-        self.image.fill(pygame.Color('lightgray' if self.active else 'white'))
-        pygame.draw.rect(self.image, pygame.Color('black'), (0, 0, INPUT_W, INPUT_H), 2)
-        if not self.active and self.text == '':
-            self.set_text(self.placeholder, 18, pygame.Color('gray'))
-        else:
-            self.set_text(self.text, 20, pygame.Color('black'))
+    def set_text(self, text):
+        self.text = text
+        super().set_text(self.placeholder if self.text == '' and not self.active else self.text)
 
-
-class EndMenu:
-    def __init__(self, command, score, start, screen):
-        self.start = start
-        self.screen = screen
-
-        self.text = pygame.sprite.GroupSingle()
-        TextView(40, 0, settings.HEIGHT * 0.3, self.text)
-        self.text.sprite.set_text([f'Победила команда "{command}"', f'Со счетом {score}', 'Поздравляем!'])
-        self.text.sprite.rect.centerx = settings.WIDTH // 2
-
-        self.button = pygame.sprite.GroupSingle()
-        ImageButton('В главное меню', self.start, 0, self.text.sprite.rect.bottom + 15, self.button)
-        self.button.sprite.rect.centerx = settings.WIDTH // 2
-
-    def update(self):
-        self.text.draw(self.screen)
-        self.button.update()
-        self.button.draw(self.screen)
+    def set_active(self, active):
+        self.active = active
+        if self.text == '':
+            super().set_text('' if self.active else self.placeholder)

@@ -1,4 +1,5 @@
 import pygame
+from ui import Sprite
 import settings
 from random import random
 
@@ -7,7 +8,7 @@ class Wheel:
     def __init__(self, select, screen):
         self.screen = screen
         self.wheel = pygame.sprite.GroupSingle()
-        WheelSprite(select, settings.WIDTH // 2, int(settings.HEIGHT * 0.45), self.wheel)
+        WheelSprite(select, settings.WIDTH // 2, settings.HEIGHT // 2, self.wheel)
 
     def rotate(self):
         self.wheel.sprite.rotate()
@@ -20,14 +21,13 @@ class Wheel:
         pygame.draw.polygon(self.screen, pygame.Color('gold'), ((x - 10, y - 10), (x, y + 10), (x + 10, y - 10)))
 
 
-class WheelSprite(pygame.sprite.Sprite):
-    def __init__(self, callback, x, y, group):
-        super().__init__(group)
+class WheelSprite(Sprite):
+    def __init__(self, callback, x, y, *groups):
+        super().__init__(pygame.image.load(settings.wheel).convert_alpha(), *groups)
+        self.sprite = self.image
         self.callback = callback
         self.x, self.y = x, y
-        self.sprite = pygame.image.load(settings.wheel).convert_alpha()
-        self.image = self.sprite
-        self.rect = self.image.get_rect(center=(self.x, self.y))
+        self.rect.center = self.x, self.y
         self.angle = random() * 360
         self.speed = 0
 
@@ -42,4 +42,3 @@ class WheelSprite(pygame.sprite.Sprite):
             self.speed -= settings.boost * tick
             if self.speed <= 0:
                 self.callback(settings.options[int(self.angle / 360 * len(settings.options))])
-
