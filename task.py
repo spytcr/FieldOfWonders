@@ -1,9 +1,7 @@
 import pygame
 from collections import Counter
 import settings
-from ui import Button, Container
-
-BOX_SIZE = 40
+from ui import Button, Container, load, font
 
 
 class Task:
@@ -11,8 +9,7 @@ class Task:
         self.callback = callback
         self.screen = screen
 
-        self.card = TaskGroup(pygame.image.load(settings.card_md).convert_alpha(),
-                              settings.WIDTH * 0.75, settings.HEIGHT * 0.1)
+        self.card = TaskGroup(load(settings.card_md), screen.get_width() * 0.71, screen.get_height() * 0.13)
         for i, text in enumerate(data['expressions']):
             for char in text:
                 TaskSprite(self.on_click, char, i, self.card)
@@ -55,14 +52,13 @@ class Task:
 class TaskSprite(Button):
     def __init__(self, callback, char, layer, *groups):
         self.active = False
-        super().__init__(callback, char, char, pygame.font.SysFont('arialblack', 30),
-                         pygame.Surface((BOX_SIZE, BOX_SIZE)), *groups)
+        super().__init__(callback, char, char, font(45), pygame.Surface((65 * settings.k, 65 * settings.k)), *groups)
         self.char = char
         self._layer = layer
 
     def draw(self):
         self.image.fill(pygame.Color('lightgray' if self.active else 'white'))
-        pygame.draw.rect(self.image, pygame.Color('black'), (0, 0, BOX_SIZE, BOX_SIZE), 1)
+        pygame.draw.rect(self.image, pygame.Color('black'), (0, 0, self.rect.w, self.rect.h), 1)
         super().draw()
 
     def set_active(self, active):
@@ -77,19 +73,20 @@ class TaskSprite(Button):
 
 class TaskGroup(Container):
     def calc(self):
+        w, h = self.sprites()[0].rect.size
         count = Counter([sprite.layer for sprite in self.sprites()])
-        x = self.sprite.rect.x + (self.sprite.rect.w + max(count.values()) * BOX_SIZE) // 2
-        y = self.sprite.rect.y + (self.sprite.rect.h - len(count) * (BOX_SIZE + 4)) // 2
+        x = self.sprite.rect.x + (self.sprite.rect.w + max(count.values()) * w) // 2
+        y = self.sprite.rect.y + (self.sprite.rect.h - len(count) * (h + 4)) // 2
         for sprite in self.sprites():
-            sprite.rect.x = x - count[sprite.layer] * BOX_SIZE
-            sprite.rect.y = y + sprite.layer * (BOX_SIZE + 4) + (4 if sprite.layer == len(count) - 1 else 0)
+            sprite.rect.x = x - count[sprite.layer] * w
+            sprite.rect.y = y + sprite.layer * (h + 4) + (4 if sprite.layer == len(count) - 1 else 0)
             count[sprite.layer] -= 1
 
         # Draw plus and line
         self.sprite.redraw()
-        ly = (self.sprite.rect.h + len(count) * (BOX_SIZE + 4)) // 2 - BOX_SIZE - 5
+        ly = (self.sprite.rect.h + len(count) * (h + 4)) // 2 - h - 5
         pygame.draw.line(self.sprite.image, pygame.Color('black'),
                          (self.sprite.rect.w * 0.05, ly), (self.sprite.rect.w * 0.95, ly), 2)
-        cx, cy = self.sprite.rect.w * 0.05, (self.sprite.rect.h + BOX_SIZE + 4) // 2 - BOX_SIZE - 5
+        cx, cy = self.sprite.rect.w * 0.05, (self.sprite.rect.h + h + 4) // 2 - h - 5
         pygame.draw.line(self.sprite.image, pygame.Color('black'), (cx + 10, cy - 10), (cx + 10, cy + 10), 2)
         pygame.draw.line(self.sprite.image, pygame.Color('black'), (cx, cy), (cx + 20, cy), 2)

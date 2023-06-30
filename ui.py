@@ -1,5 +1,6 @@
 import pygame
 from abc import abstractmethod
+import settings
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -41,6 +42,15 @@ class Clickable:
                     self.on_click(*self.args)
         elif Clickable._clicked:
             Clickable._clicked = False
+
+
+class ClickableText(TextView):
+    def __init__(self, text, font, on_click, *groups):
+        super().__init__(text, font, *groups)
+        self.clickable = Clickable(on_click)
+
+    def update(self):
+        self.clickable.update(self.rect)
 
 
 class Button(Sprite):
@@ -91,3 +101,14 @@ class LinearLayout(Container):
         for sprite in self.sprites():
             sprite.rect.centerx, sprite.rect.y = self.sprite.rect.centerx, y
             y += sprite.rect.h + 8
+
+
+def load(path):
+    image = pygame.image.load(path).convert_alpha()
+    w, h = image.get_size()
+    image = pygame.transform.scale(image, (settings.k * w, settings.k * h))
+    return image
+
+
+def font(size):
+    return pygame.font.SysFont('arialblack', int(settings.k * size))

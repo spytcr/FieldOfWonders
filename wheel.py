@@ -1,5 +1,5 @@
 import pygame
-from ui import Sprite
+from ui import Sprite, load
 import settings
 from random import random
 
@@ -8,7 +8,7 @@ class Wheel:
     def __init__(self, select, screen):
         self.screen = screen
         self.wheel = pygame.sprite.GroupSingle()
-        WheelSprite(select, settings.WIDTH // 2, settings.HEIGHT // 2, self.wheel)
+        WheelSprite(select, screen.get_width() // 2, screen.get_height() // 2, self.wheel)
 
     def rotate(self):
         self.wheel.sprite.rotate()
@@ -23,7 +23,7 @@ class Wheel:
 
 class WheelSprite(Sprite):
     def __init__(self, callback, x, y, *groups):
-        super().__init__(pygame.image.load(settings.wheel).convert_alpha(), *groups)
+        super().__init__(load(settings.wheel), *groups)
         self.sprite = self.image
         self.callback = callback
         self.x, self.y = x, y

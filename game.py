@@ -32,6 +32,20 @@ class Game:
                 self.hud.set_text(self.hud.alert,
                                   [f'"{t}"', 'теряет очки', 'Ход переходит',  f'"{self.score[self.command][0]}"'])
                 self.update_score()
+            elif option == 'p':
+                def callback(get):
+                    if get:
+                        self.hud.set_text(self.hud.alert,
+                                          ['Команда', f'"{self.score[self.command][0]}"', 'выбывает'])
+                        del self.score[self.command]
+                        self.command %= len(self.score)
+                    else:
+                        self.hud.set_text(self.hud.alert,
+                                          ['Команда', f'"{self.score[self.command][0]}"', 'получает 500 очков'])
+                        self.score[self.command][1] += 500
+                    self.update_score()
+                    self.hud.prize = None
+                self.hud.set_prize(callback)
             self.hud.active = True
         else:
             self.hud.set_text(self.hud.alert, ['Сектор', f'"{option}"', 'на барабане.'])

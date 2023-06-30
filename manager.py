@@ -2,13 +2,13 @@ import pygame
 import json
 import settings
 from game import Game
-from menu import Menu
+from menu import StartMenu, EndMenu
 
 
 class Manager:
     def __init__(self, screen):
         self.screen = screen
-        self.background = pygame.image.load(settings.background)
+        self.background = pygame.transform.scale(pygame.image.load(settings.background), screen.get_size())
 
         with open(settings.questions, 'r', encoding='utf8') as f:
             self.data = json.load(f)
@@ -23,9 +23,9 @@ class Manager:
         self.game = None
         self.round += 1
         if self.round == len(self.data):
-            self.menu = Menu('Финал', self.game_start, self.screen, commands=[el[0] for el in self.winners])
+            self.menu = StartMenu('Финал', self.game_start, self.screen, commands=[el[0] for el in self.winners])
         else:
-            self.menu = Menu(f'Раунд {self.round}', self.game_start, self.screen)
+            self.menu = StartMenu(f'Раунд {self.round}', self.game_start, self.screen)
 
     def game_start(self, commands):
         self.menu = None
@@ -35,9 +35,11 @@ class Manager:
     def game_end(self, winner):
         if self.round == len(self.data):
             self.round = 0
+            self.game = None
+            self.menu = EndMenu(winner, self.menu_start, self.screen)
         else:
             self.winners[self.round - 1] = winner
-        self.menu_start()
+            self.menu_start()
 
     def update(self, tick):
         self.screen.blit(self.background, (0, 0))
