@@ -10,9 +10,6 @@ class Wheel:
         self.wheel = pygame.sprite.GroupSingle()
         WheelSprite(select, screen.get_width() // 2, screen.get_height() // 2, self.wheel)
 
-    def rotate(self):
-        self.wheel.sprite.rotate()
-
     def update(self, tick):
         self.wheel.update(tick)
         self.wheel.draw(self.screen)

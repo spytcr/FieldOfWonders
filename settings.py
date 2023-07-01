@@ -14,4 +14,7 @@ card_sm = 'resources/card_sm.png'
 card_md = 'resources/card_md.png'
 card_lg = 'resources/card_lg.png'
 
+sound = 'resources/sound/'
+
+WIDTH, HEIGHT = 1920, 1080
 k = 1

@@ -11,7 +11,7 @@ pygame.init()
 pygame.display.set_caption('Поле математических чудес')
 pygame.display.set_icon(pygame.image.load(settings.wheel))
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-settings.k = screen.get_width() / 1920
+settings.k = min(screen.get_width() / settings.WIDTH, screen.get_height() / settings.HEIGHT)
 clock = pygame.time.Clock()
 running = True
 game = Manager(screen)

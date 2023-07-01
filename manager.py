@@ -3,6 +3,7 @@ import json
 import settings
 from game import Game
 from menu import StartMenu, EndMenu
+from sound import SoundManager
 
 
 class Manager:
@@ -14,6 +15,8 @@ class Manager:
             self.data = json.load(f)
         self.round = 0
         self.winners = [[] for _ in range(len(self.data) - 1)]
+
+        self.sound = SoundManager()
 
         self.menu = None
         self.game = None
@@ -30,13 +33,15 @@ class Manager:
     def game_start(self, commands):
         self.menu = None
         self.game = Game(self.winners if self.round == len(self.data) else [[el, 0] for el in commands],
-                         self.data[self.round - 1], self.game_end, self.screen)
+                         self.data[self.round - 1], self.game_end, self.sound, self.screen)
+        self.sound.start.play()
 
     def game_end(self, winner):
         if self.round == len(self.data):
             self.round = 0
             self.game = None
             self.menu = EndMenu(winner, self.menu_start, self.screen)
+            self.sound.winner.play()
         else:
             self.winners[self.round - 1] = winner
             self.menu_start()
