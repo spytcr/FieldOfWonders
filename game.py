@@ -22,7 +22,7 @@ class Game:
 
     def update_score(self):
         text = ['Счет'] + [f'{el[0]}: {el[1]}' for el in self.score]
-        self.hud.set_text(self.hud.score, text)
+        self.hud.set_text(self.hud.score, text, active=self.command + 1)
 
     def rotate(self):
         self.sound.spin.play(-1)
@@ -30,7 +30,7 @@ class Game:
 
     def select(self, option):
         self.sound.spin.stop()
-        if option in ('b', 'p'):
+        if option in ('b', 'p', '0'):
             if option == 'b':
                 self.sound.option_b.play()
                 self.score[self.command][1] = 0
@@ -38,6 +38,12 @@ class Game:
                 self.command = (self.command + 1) % len(self.score)
                 self.hud.set_text(self.hud.alert,
                                   [f'"{t}"', 'теряет очки', 'Ход переходит',  f'"{self.score[self.command][0]}"'])
+            elif option == '0':
+                if option == '0':
+                    self.sound.option_0.play()
+                    self.command = (self.command + 1) % len(self.score)
+                    self.hud.set_text(self.hud.alert,
+                                      ['Ход переходит', 'команде', f'"{self.score[self.command][0]}"'])
             elif option == 'p':
                 def callback(get):
                     if get:
@@ -56,11 +62,7 @@ class Game:
             self.hud.active = True
         else:
             self.hud.set_text(self.hud.alert, ['Сектор', f'"{option}"', 'на барабане.'])
-            if option == '0':
-                self.sound.option_0.play()
-                self.hud.active = True
-            else:
-                self.reward = option
+            self.reward = option
 
     def answer(self, correct, end):
         self.hud.active = True
@@ -79,12 +81,12 @@ class Game:
                 self.hud.set_text(self.hud.alert,
                                   ['Верно.', 'Команда', f'"{self.score[self.command][0]}"', f'+{self.reward}'])
                 self.score[self.command][1] += int(self.reward)
-            self.update_score()
         else:
             self.sound.incorrect.play()
             self.command = (self.command + 1) % len(self.score)
             self.hud.set_text(self.hud.alert,
                               ['Неверно.', 'Ход переходит', 'команде', f'"{self.score[self.command][0]}"'])
+        self.update_score()
         self.reward = None
 
     def update(self, tick):

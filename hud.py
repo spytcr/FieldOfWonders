@@ -19,10 +19,10 @@ class Hud:
         self.active = True
 
     @staticmethod
-    def set_text(attr, text):
+    def set_text(attr, text, active=None):
         attr.empty()
-        for el in text:
-            TextView(el, font(40), attr)
+        for i, el in enumerate(text):
+            TextView(el, font(45) if active is not None and i == active else font(40), attr)
         attr.update()
 
     def set_prize(self, callback):
