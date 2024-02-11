@@ -6,6 +6,9 @@ from manager import Manager
 
 if getattr(sys, 'frozen', False):
     os.chdir(sys._MEIPASS)
+    questions = os.path.join(os.path.dirname(sys.executable), 'questions.json')
+    if os.path.exists(questions):
+        settings.questions = questions
 
 pygame.init()
 pygame.display.set_caption('Поле математических чудес')

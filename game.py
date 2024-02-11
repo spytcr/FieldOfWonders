@@ -38,15 +38,18 @@ class Game:
                 self.command = (self.command + 1) % len(self.score)
                 self.hud.set_text(self.hud.alert,
                                   [f'"{t}"', 'теряет очки', 'Ход переходит',  f'"{self.score[self.command][0]}"'])
+                self.update_score()
+                self.hud.active = True
             elif option == '0':
-                if option == '0':
-                    self.sound.option_0.play()
-                    self.command = (self.command + 1) % len(self.score)
-                    self.hud.set_text(self.hud.alert,
-                                      ['Ход переходит', 'команде', f'"{self.score[self.command][0]}"'])
+                self.sound.option_0.play()
+                self.command = (self.command + 1) % len(self.score)
+                self.hud.set_text(self.hud.alert,
+                                  ['Ход переходит', 'команде', f'"{self.score[self.command][0]}"'])
+                self.update_score()
+                self.hud.active = True
             elif option == 'p':
                 def callback(get):
-                    if get:
+                    if get and len(self.score) > 1:
                         self.hud.set_text(self.hud.alert,
                                           ['Команда', f'"{self.score[self.command][0]}"', 'выбывает'])
                         del self.score[self.command]
@@ -56,10 +59,10 @@ class Game:
                                           ['Команда', f'"{self.score[self.command][0]}"', 'получает 500 очков'])
                         self.score[self.command][1] += 500
                     self.hud.prize = None
+                    self.update_score()
+                    self.hud.active = True
                 self.sound.option_p.play()
                 self.hud.set_prize(callback)
-            self.update_score()
-            self.hud.active = True
         else:
             self.hud.set_text(self.hud.alert, ['Сектор', f'"{option}"', 'на барабане.'])
             self.reward = option

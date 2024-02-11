@@ -25,14 +25,14 @@ class Manager:
     def menu_start(self):
         self.game = None
         self.round += 1
-        if self.round == len(self.data):
+        if self.round == len(self.data) != 1:
             self.menu = StartMenu('Финал', self.game_start, self.screen, commands=[el[0] for el in self.winners])
         else:
             self.menu = StartMenu(f'Раунд {self.round}', self.game_start, self.screen)
 
     def game_start(self, commands):
         self.menu = None
-        self.game = Game(self.winners if self.round == len(self.data) else [[el, 0] for el in commands],
+        self.game = Game(self.winners if self.round == len(self.data) != 1 else [[el, 0] for el in commands],
                          self.data[self.round - 1], self.game_end, self.sound, self.screen)
         self.sound.start.play()
 
